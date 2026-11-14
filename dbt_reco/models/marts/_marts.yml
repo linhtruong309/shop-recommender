@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: fct_user_item_interactions
+    description: Mỗi dòng là một cặp visitor-item, dùng để huấn luyện mô hình Two-Tower.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [visitor_id, item_id]
+    columns:
+      - name: interaction_score
+        data_tests: [not_null]
