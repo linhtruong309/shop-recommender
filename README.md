@@ -42,6 +42,7 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
    ```bash
    python ml/baseline.py --data-dir data/processed
    python ml/train_two_tower.py --data-dir data/processed
+   python ml/spark_als.py --data-dir data/processed   # needs Java 17+
    pytest ml/tests
    ```
 7. Build and run the C++ service:
@@ -75,11 +76,14 @@ Time-based split: last 14 days are the test set. Metrics at K = 10.
 |---|---|---|---|---|
 | Popularity (all time) | known visitors (14,774) | 0.0052 | 0.0035 | 0.0083 |
 | Popularity (last 7 days) | known visitors | 0.0055 | 0.0041 | 0.0090 |
-| **Two-Tower** | known visitors | **0.0393** | **0.0231** | **0.0532** |
+| Two-Tower (PyTorch) | known visitors | 0.0393 | 0.0231 | 0.0532 |
+| **ALS (Spark MLlib)** | known visitors | **0.0428** | **0.0312** | **0.0583** |
 | Popularity (all time) | all visitors (142,025) | 0.0081 | 0.0048 | 0.0096 |
-| **Two-Tower + popularity fallback** | all visitors | **0.0101** | **0.0063** | **0.0128** |
+| Two-Tower + popularity fallback | all visitors | 0.0101 | 0.0063 | 0.0128 |
+| **ALS + popularity fallback** | all visitors | **0.0105** | **0.0072** | **0.0133** |
 
-- Two-Tower is ~7x better than the best popularity baseline for visitors with history.
+- Both learned models beat the best popularity baseline by ~7–8x for visitors with history.
+- ALS (implicit feedback, rank 64, 10 iterations) edges out the untuned Two-Tower (5 epochs) on this sparse dataset; Two-Tower adds category features and serves from the C++ service.
 - ~90% of test visitors are new (cold start); they fall back to recent popularity.
 
 ## Serving
@@ -107,5 +111,6 @@ C++ is 2.7x faster at p50 and 6.3x faster at p99, with a much tighter tail.
 - [x] Time-based train/test split, export to Parquet
 - [x] Popularity baseline and Recall@10 evaluation
 - [x] Two-Tower model in PyTorch
+- [x] Spark MLlib ALS baseline, compared with Popularity and Two-Tower
 - [x] C++ REST inference service
 - [x] Latency benchmark, results in README

@@ -1,0 +1,28 @@
+{
+  "config": {
+    "data_dir": "data/processed",
+    "rank": 64,
+    "max_iter": 10,
+    "reg": 0.1,
+    "alpha": 1.0,
+    "k": 10,
+    "recent_days": 7,
+    "driver_memory": "4g",
+    "seed": 42,
+    "results": "ml/results/spark_als.json"
+  },
+  "results": {
+    "spark_als/known_visitors": {
+      "recall@10": 0.04276937721514304,
+      "ndcg@10": 0.031214660700472522,
+      "hit_rate@10": 0.058345742520644374,
+      "n_users": 14774
+    },
+    "spark_als/all_visitors": {
+      "recall@10": 0.010480784862719908,
+      "ndcg@10": 0.0071641772795589,
+      "hit_rate@10": 0.013293434254532653,
+      "n_users": 142025
+    }
+  }
+}

@@ -8,6 +8,7 @@ Recommendation models and evaluation.
 | `baseline.py` | Popularity baselines (all-time, last N days) |
 | `two_tower.py` | Two-Tower model, training samples, in-batch loss with logQ correction |
 | `train_two_tower.py` | Train, evaluate, export embeddings to `ml/artifacts/` |
+| `spark_als.py` | Spark MLlib ALS baseline (implicit feedback), same evaluation |
 | `tests/` | Unit tests for metrics and model |
 
 Results are written to `ml/results/`.

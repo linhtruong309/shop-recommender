@@ -4,3 +4,4 @@ pandas>=2.2
 python-dotenv>=1.0
 pytest>=8.0
 torch>=2.6
+pyspark>=4.1
