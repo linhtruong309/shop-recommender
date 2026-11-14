@@ -1,3 +1,24 @@
-C++ inference service: loads precomputed embeddings and serves top-k recommendations over REST.
+C++ inference service: loads embeddings exported by `ml/train_two_tower.py`
+and serves top-k recommendations over REST.
 
-`GET /recommendations?user_id=...&k=10`
+| File | Purpose |
+|---|---|
+| `include/recommender.hpp`, `src/recommender.cpp` | Load artifacts, multi-threaded top-k by dot product, popularity fallback |
+| `src/server.cpp` | REST API (cpp-httplib) |
+| `src/bench.cpp` | Latency benchmark (p50 / p95 / p99) |
+| `tests/test_recommender.cpp` | Unit tests |
+
+Build and run (from `inference_cpp/`):
+
+```bash
+cmake -S . -B build
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+./build/reco_bench ../ml/artifacts 1000
+./build/reco_server ../ml/artifacts 8080
+```
+
+Endpoints:
+
+- `GET /health`
+- `GET /recommendations?user_id=<id>&k=10` → `{"user_id", "source": "two_tower" | "popular", "latency_ms", "items": [{"item_id", "score"}]}`
