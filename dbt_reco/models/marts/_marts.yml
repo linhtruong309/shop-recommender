@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_user_item_interactions
-    description: Mỗi dòng là một cặp visitor-item, dùng để huấn luyện mô hình Two-Tower.
+    description: One row per visitor-item pair; training data for the Two-Tower model.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:

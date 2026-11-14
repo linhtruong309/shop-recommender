@@ -1,4 +1,4 @@
--- Danh mục mới nhất của mỗi sản phẩm (categoryid có thể thay đổi theo thời gian)
+-- Latest category per item (categoryid can change over time)
 select
     item_id,
     try_to_number(value)  as category_id,

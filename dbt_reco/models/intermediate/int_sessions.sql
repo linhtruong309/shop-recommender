@@ -1,4 +1,4 @@
--- Gán session: nghỉ quá N phút giữa 2 sự kiện thì bắt đầu session mới
+-- Sessionize events: a gap longer than N minutes starts a new session
 with ordered as (
     select
         *,

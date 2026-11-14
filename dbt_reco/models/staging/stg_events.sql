@@ -1,4 +1,4 @@
--- Một dòng = một sự kiện của visitor trên một sản phẩm
+-- One row per visitor event on an item
 select
     to_timestamp_ntz(timestamp, 3)  as event_at,   -- epoch ms -> timestamp
     visitorid                       as visitor_id,

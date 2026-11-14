@@ -1,5 +1,5 @@
--- Bảng huấn luyện: mỗi cặp (visitor, item) với tín hiệu ẩn (implicit feedback)
--- Trọng số: view = 1, addtocart = 3, transaction = 5
+-- Training table: one row per (visitor, item) pair with implicit-feedback signals
+-- Weights: view = 1, addtocart = 3, transaction = 5
 select
     s.visitor_id,
     s.item_id,

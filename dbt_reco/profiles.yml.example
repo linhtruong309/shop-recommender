@@ -1,4 +1,4 @@
-# Copy sang ~/.dbt/profiles.yml
+# Copy to ~/.dbt/profiles.yml
 dbt_reco:
   target: dev
   outputs:
