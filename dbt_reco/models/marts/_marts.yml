@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_user_item_interactions
-    description: One row per visitor-item pair; training data for the Two-Tower model.
+    description: One row per visitor-item pair over the full period.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -10,3 +10,29 @@ models:
     columns:
       - name: interaction_score
         data_tests: [not_null]
+
+  - name: train_interactions
+    description: Visitor-item pairs before the cutoff; model training data.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [visitor_id, item_id]
+    columns:
+      - name: interaction_score
+        data_tests: [not_null]
+
+  - name: test_interactions
+    description: Visitor-item pairs in the last test_window_days; evaluation data.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [visitor_id, item_id]
+    columns:
+      - name: is_known_visitor
+        data_tests: [not_null]
+
+  - name: dim_items
+    description: One row per item with category and train popularity.
+    columns:
+      - name: item_id
+        data_tests: [unique, not_null]
