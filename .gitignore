@@ -6,3 +6,4 @@ dbt_reco/target/
 dbt_reco/dbt_packages/
 dbt_reco/logs/
 inference_cpp/build/
+.DS_Store
