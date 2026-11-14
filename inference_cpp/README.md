@@ -22,3 +22,15 @@ Endpoints:
 
 - `GET /health`
 - `GET /recommendations?user_id=<id>&k=10` → `{"user_id", "source": "two_tower" | "popular", "latency_ms", "items": [{"item_id", "score"}]}`
+
+Environment variables (used when deployed):
+
+- `PORT`: listen port (default 8080)
+- `RECO_THREADS`: worker threads for scoring (default: all cores, max 8)
+
+Docker (embeddings are downloaded from the GitHub Release at build time):
+
+```bash
+docker build -t shop-recommender-api .
+docker run -p 8080:8080 shop-recommender-api
+```

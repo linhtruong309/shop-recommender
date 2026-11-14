@@ -10,3 +10,4 @@ inference_cpp/build/
 .DS_Store
 .pytest_cache/
 ml/artifacts/
+ml/artifacts_slim/
