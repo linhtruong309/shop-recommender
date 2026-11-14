@@ -50,14 +50,15 @@ void push_top(TopHeap& heap, Scored s, size_t k) {
 
 }  // namespace
 
-Recommender Recommender::load(const std::string& dir) {
+Recommender Recommender::load(const std::string& dir, unsigned n_threads) {
     const int dim = read_dim(dir + "/meta.json");
     return Recommender(dim,
                        read_binary<int64_t>(dir + "/item_ids.bin"),
                        read_binary<float>(dir + "/item_vecs.bin"),
                        read_binary<int64_t>(dir + "/user_ids.bin"),
                        read_binary<float>(dir + "/user_vecs.bin"),
-                       read_binary<int64_t>(dir + "/popular_ids.bin"));
+                       read_binary<int64_t>(dir + "/popular_ids.bin"),
+                       n_threads);
 }
 
 Recommender::Recommender(int dim,

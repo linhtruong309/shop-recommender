@@ -20,8 +20,8 @@ struct Result {
 // Embeddings exported by ml/train_two_tower.py
 class Recommender {
 public:
-    // Load from an artifacts directory
-    static Recommender load(const std::string& dir);
+    // Load from an artifacts directory; n_threads = 0 uses all cores (max 8)
+    static Recommender load(const std::string& dir, unsigned n_threads = 0);
 
     // Build from in-memory data (used by tests)
     Recommender(int dim,
