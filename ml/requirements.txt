@@ -1,0 +1,4 @@
+snowflake-connector-python[pandas]>=3.12
+pyarrow>=18.0
+pandas>=2.2
+python-dotenv>=1.0

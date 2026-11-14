@@ -9,6 +9,7 @@ macro-paths: ["macros"]
 
 vars:
   session_timeout_minutes: 30
+  test_window_days: 14
 
 models:
   dbt_reco:
