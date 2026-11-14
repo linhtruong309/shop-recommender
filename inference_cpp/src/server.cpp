@@ -17,12 +17,16 @@ std::string error_json(const std::string& message) {
 }  // namespace
 
 int main(int argc, char** argv) {
+    // Config: argv first, then environment (PORT is set by hosting platforms)
+    const char* env_port = std::getenv("PORT");
+    const char* env_threads = std::getenv("RECO_THREADS");
     const std::string dir = argc > 1 ? argv[1] : "../ml/artifacts";
-    const int port = argc > 2 ? std::atoi(argv[2]) : 8080;
+    const int port = argc > 2 ? std::atoi(argv[2]) : (env_port ? std::atoi(env_port) : 8080);
+    const unsigned threads = env_threads ? static_cast<unsigned>(std::atoi(env_threads)) : 0;
 
     std::cout << "Loading artifacts from " << dir << " ..." << std::endl;
     const auto start = std::chrono::steady_clock::now();
-    const auto model = reco::Recommender::load(dir);
+    const auto model = reco::Recommender::load(dir, threads);
     const auto load_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
     std::cout << "Loaded " << model.n_items() << " items, " << model.n_users()
               << " users, dim " << model.dim() << " in " << load_s << "s" << std::endl;
