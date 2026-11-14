@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shop-recommender · live demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --floor: #e9ede7;      /* store floor, pale sage */
+    --shelf: #c9d1c6;      /* shelf edge */
+    --tag: #ffffff;        /* paper tag */
+    --ink: #1b1f1d;
+    --muted: #5d6660;
+    --trend: #ffd23f;      /* "trending" tag yellow */
+    --action: #2449d8;
+    --error: #b42318;
+    --on-action: #ffffff;
+    --font: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --floor: #151816; --shelf: #2a302c; --tag: #f4f5f1; --ink: #e7ebe6;
+      --muted: #99a39c; --trend: #f2c230; --action: #7d97ff; --error: #ff8a7a;
+      --on-action: #0d1430;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--floor); }
+  body { margin: 0; color: var(--ink); font: 400 17px/1.55 var(--font); font-stretch: 100%; }
+  a { color: inherit; text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--action); outline-offset: 2px; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  header { padding: 28px 0 0; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .brand { font-weight: 700; font-stretch: 75%; font-size: 20px; letter-spacing: 0.01em; }
+  header a { font-size: 15px; color: var(--muted); }
+
+  .intro { padding: 56px 0 28px; max-width: 720px; }
+  h1 {
+    margin: 0 0 16px; font-weight: 800; font-stretch: 75%; max-width: 20ch;
+    font-size: clamp(40px, 5.6vw, 64px); line-height: 1.02; letter-spacing: -0.01em;
+  }
+  .intro p { margin: 0; color: var(--muted); max-width: 52ch; font-size: 18px; }
+  .legend { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; max-width: 60ch; }
+  .legend li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; font-size: 16px; color: var(--muted); }
+  .legend strong { color: var(--ink); font-weight: 700; }
+  .swatch {
+    width: 34px; height: 24px; border-radius: 4px; background: var(--tag); position: relative; margin-top: 1px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 4px 10px -6px rgba(0,0,0,0.35);
+  }
+  .swatch.trend { background: var(--trend); }
+  .swatch::before { content: ""; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--floor); }
+
+  /* Controls */
+  form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-top: 32px; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+  input, select {
+    font: 600 20px var(--font); font-stretch: 87%; color: var(--ink);
+    background: transparent; border: 0; border-bottom: 2px solid var(--ink);
+    padding: 6px 2px; border-radius: 0;
+  }
+  input { width: 220px; }
+  select { padding-right: 24px; }
+  button.go {
+    font: 700 17px var(--font); font-stretch: 87%; background: var(--action); color: var(--on-action);
+    border: 0; border-radius: 999px; padding: 12px 24px; cursor: pointer;
+  }
+  button.go:disabled { opacity: 0.55; cursor: progress; }
+  .samples { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; font-size: 15px; color: var(--muted); }
+  .samples button {
+    font: 600 15px var(--font); font-stretch: 87%; color: var(--ink); background: none; border: 0;
+    padding: 2px 0; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
+  }
+  .samples button.new { text-decoration-style: dashed; }
+
+  /* Shelf */
+  .summary { margin: 48px 0 0; min-height: 28px; font-size: 16px; color: var(--muted); }
+  .summary strong { color: var(--ink); font-weight: 700; }
+  .summary .err { color: var(--error); font-weight: 600; }
+
+  .shelf {
+    list-style: none; margin: 18px 0 0; padding: 0 0 22px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 30px 18px;
+    border-bottom: 10px solid var(--shelf);
+  }
+  .tag {
+    position: relative; background: var(--tag); color: #1b1f1d;
+    border-radius: 6px 6px 6px 6px; padding: 16px 16px 14px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 8px 18px -12px rgba(0,0,0,0.35);
+  }
+  .tag.trend { background: var(--trend); }
+  .tag::before { /* punched hole */
+    content: ""; position: absolute; top: 10px; right: 12px; width: 9px; height: 9px;
+    border-radius: 50%; background: var(--floor);
+  }
+  .rank { font-weight: 800; font-stretch: 62%; font-size: 30px; line-height: 1; }
+  .code { display: block; width: 100%; height: 38px; margin: 12px 0 4px; }
+  .sku { font-size: 13px; font-stretch: 87%; letter-spacing: 0.08em; color: #4a524c; }
+  .price { margin-top: 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .price b { font-weight: 800; font-stretch: 62%; font-size: 34px; line-height: 1; }
+  .price span { font-size: 13px; color: #4a524c; text-align: right; }
+  .price b.label { font-size: 24px; font-stretch: 75%; }
+
+  .empty { grid-column: 1 / -1; color: var(--muted); padding: 48px 0 24px; font-size: 18px; }
+
+  @keyframes place { from { opacity: 0; transform: translateY(-10px) rotate(-1.5deg); } to { opacity: 1; transform: none; } }
+  .shelf.filled .tag { animation: place 340ms cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 35ms); }
+  @media (prefers-reduced-motion: reduce) { .shelf.filled .tag { animation: none; } }
+
+  footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; max-width: 70ch; }
+  footer p { margin: 0 0 8px; }
+
+  @media (max-width: 560px) {
+    .intro { padding-top: 36px; }
+    input { width: 100%; }
+    .field:first-child { flex: 1 1 100%; }
+    .shelf { grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
+    .price b { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand">shop-recommender</span>
+    <a href="https://github.com/linhtruong309/shop-recommender">Source on GitHub</a>
+  </header>
+
+  <section class="intro">
+    <h1>Don't know what to buy next? Let me recommend something for you.</h1>
+    <p>Enter your shopper ID and your shelf fills with the products you're most likely to want, picked from 235,061 items in the RetailRocket store.</p>
+    <ul class="legend">
+      <li><span class="swatch" aria-hidden="true"></span><span><strong>You've shopped here before:</strong> products matched to your own views, carts and purchases by a Two-Tower model.</span></li>
+      <li><span class="swatch trend" aria-hidden="true"></span><span><strong>You're new here:</strong> we don't know your taste yet, so you'll see the store's best sellers.</span></li>
+    </ul>
+
+    <form id="form">
+      <label class="field">Your shopper ID
+        <input id="user" type="number" min="0" inputmode="numeric" placeholder="e.g. 2" required>
+      </label>
+      <label class="field">Products
+        <select id="k"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+      </label>
+      <button class="go" id="go" type="submit">Show my picks</button>
+    </form>
+    <div class="samples" id="samples">Or try as:</div>
+  </section>
+
+  <p class="summary" id="summary" aria-live="polite"></p>
+  <ol class="shelf" id="shelf"><li class="empty">Enter your shopper ID to fill your shelf.</li></ol>
+
+  <footer>
+    <p>Product IDs are anonymized in the RetailRocket dataset, so each tag shows an ID and a barcode drawn from it rather than a product name.</p>
+    <p>Hosted on a free plan: if nobody has visited for 15 minutes, the first request takes about a minute while the server wakes up.</p>
+    <p>API: <a href="/health">/health</a>, <a href="/recommendations?user_id=2&k=5">/recommendations</a></p>
+  </footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const form = $("form"), userInput = $("user"), kSelect = $("k"), go = $("go");
+  const summary = $("summary"), shelf = $("shelf"), samples = $("samples");
+
+  async function getJSON(url) {
+    const res = await fetch(url);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Request failed (${res.status})`);
+    return body;
+  }
+
+  // Decorative barcode drawn deterministically from the item ID
+  function barcode(id) {
+    let x = (Number(id) * 2654435761) >>> 0;
+    const next = () => (x = (x * 1103515245 + 12345) >>> 0) / 4294967296;
+    let pos = 0, bars = "";
+    while (pos < 96) {
+      const w = 1 + Math.floor(next() * 3);
+      if (next() > 0.42) bars += `<rect x="${pos}" width="${w}" height="38"/>`;
+      pos += w + 1;
+    }
+    return `<svg class="code" viewBox="0 0 96 38" preserveAspectRatio="none" aria-hidden="true" fill="currentColor">${bars}</svg>`;
+  }
+
+  function render(data) {
+    const personal = data.source === "two_tower";
+    summary.innerHTML = personal
+      ? `<strong>Picked for you, shopper ${data.user_id}</strong>, from your history. Ranked in ${data.latency_ms.toFixed(1)} ms.`
+      : `<strong>Welcome, shopper ${data.user_id}!</strong> You're new here, so here are the store's best sellers to get you started.`;
+    if (!data.items.length) { shelf.innerHTML = '<li class="empty">No products to show.</li>'; return; }
+    shelf.classList.remove("filled"); void shelf.offsetWidth; shelf.classList.add("filled");
+    shelf.innerHTML = data.items.map((item, i) => `
+      <li class="tag${personal ? "" : " trend"}" style="--i:${i}">
+        <div class="rank">${i + 1}</div>
+        ${barcode(item.item_id)}
+        <div class="sku">Product ${item.item_id}</div>
+        <div class="price">${personal
+          ? `<b>${Math.round(item.score * 100)}%</b><span>match</span>`
+          : `<b class="label">Best seller</b>`}</div>
+      </li>`).join("");
+  }
+
+  async function recommend(userId) {
+    userInput.value = userId;
+    go.disabled = true;
+    summary.textContent = "Finding your picks…";
+    const slow = setTimeout(() => { summary.textContent = "Waking up the server. This can take up to a minute on the free plan."; }, 2500);
+    try {
+      render(await getJSON(`/recommendations?user_id=${encodeURIComponent(userId)}&k=${kSelect.value}`));
+    } catch (err) {
+      summary.innerHTML = `<span class="err">Couldn't load your picks.</span> ${err.message}. Check that your shopper ID is a whole number and try again.`;
+      shelf.innerHTML = "";
+    } finally {
+      clearTimeout(slow);
+      go.disabled = false;
+    }
+  }
+
+  form.addEventListener("submit", (e) => { e.preventDefault(); recommend(userInput.value.trim()); });
+
+  function addSample(label, id, isNew) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = label; if (isNew) b.className = "new";
+    b.addEventListener("click", () => recommend(id));
+    samples.appendChild(b);
+  }
+
+  getJSON("/sample_users?n=5")
+    .then(({ user_ids }) => user_ids.forEach((id) => addSample(`Shopper ${id}`, id, false)))
+    .catch(() => addSample("Shopper 2", 2, false))
+    .finally(() => addSample("A new shopper", 987654321, true));
+</script>
+</body>
+</html>
