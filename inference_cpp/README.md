@@ -34,3 +34,6 @@ Docker (embeddings are downloaded from the GitHub Release at build time):
 docker build -t shop-recommender-api .
 docker run -p 8080:8080 shop-recommender-api
 ```
+
+Demo page: `web/index.html` is served at `/` (directory set by `RECO_WEB_DIR`, default `web`).
+`GET /sample_users?n=5` returns random known shopper IDs for the demo.

@@ -18,6 +18,7 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
 
 The C++ API is deployed on Render (free plan; the first request after 15 idle minutes takes ~1 minute to wake up):
 
+- **Demo page: https://shop-recommender-api.onrender.com/**
 - Health: https://shop-recommender-api.onrender.com/health
 - Personalized (visitor with history): https://shop-recommender-api.onrender.com/recommendations?user_id=2&k=5
 - Cold start (unknown visitor → popular items): https://shop-recommender-api.onrender.com/recommendations?user_id=999999999&k=5
