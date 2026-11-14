@@ -41,6 +41,7 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
 6. Run baselines and tests:
    ```bash
    python ml/baseline.py --data-dir data/processed
+   python ml/train_two_tower.py --data-dir data/processed
    pytest ml/tests
    ```
 
@@ -58,11 +59,26 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
 | `test_interactions` | Visitor–item pairs after the cutoff, with `is_known_visitor` flag (evaluation) |
 | `dim_items` | Item category, parent category and train popularity |
 
+## Results
+
+Time-based split: last 14 days are the test set. Metrics at K = 10.
+
+| Model | Audience | Recall@10 | NDCG@10 | HitRate@10 |
+|---|---|---|---|---|
+| Popularity (all time) | known visitors (14,774) | 0.0052 | 0.0035 | 0.0083 |
+| Popularity (last 7 days) | known visitors | 0.0055 | 0.0041 | 0.0090 |
+| **Two-Tower** | known visitors | **0.0393** | **0.0231** | **0.0532** |
+| Popularity (all time) | all visitors (142,025) | 0.0081 | 0.0048 | 0.0096 |
+| **Two-Tower + popularity fallback** | all visitors | **0.0101** | **0.0063** | **0.0128** |
+
+- Two-Tower is ~7x better than the best popularity baseline for visitors with history.
+- ~90% of test visitors are new (cold start); they fall back to recent popularity.
+
 ## Roadmap
 
 - [x] Snowflake setup, raw data ingestion, dbt staging/intermediate/marts + tests
 - [x] Time-based train/test split, export to Parquet
-- [ ] Popularity baseline and Recall@10 evaluation
-- [ ] Two-Tower model in PyTorch
+- [x] Popularity baseline and Recall@10 evaluation
+- [x] Two-Tower model in PyTorch
 - [ ] C++ REST inference service
 - [ ] Latency benchmark, results in README
