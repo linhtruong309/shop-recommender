@@ -29,9 +29,14 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
    ```bash
    pip install dbt-snowflake
    cp dbt_reco/profiles.yml.example ~/.dbt/profiles.yml
-   export $(grep -v '^#' .env | xargs)
+   set -a; source .env; set +a
    cd dbt_reco
    dbt deps && dbt build
+   ```
+5. Export marts to Parquet:
+   ```bash
+   pip install -r ml/requirements.txt
+   python ml/export_parquet.py --out-dir data/processed
    ```
 
 ## dbt models
@@ -42,12 +47,16 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
 | `stg_item_properties`, `stg_category_tree` | Item properties and category hierarchy |
 | `int_item_current_category` | Latest category per item |
 | `int_sessions` | Sessions split on 30-minute inactivity (`var: session_timeout_minutes`) |
-| `fct_user_item_interactions` | Training table: visitor–item interaction score (view=1, cart=3, purchase=5) |
+| `fct_user_item_interactions` | Full-period visitor–item interaction score (view=1, cart=3, purchase=5) |
+| `int_events_split` | Events labeled `train` / `test`; last 14 days = test (`var: test_window_days`) |
+| `train_interactions` | Visitor–item pairs before the cutoff (model training) |
+| `test_interactions` | Visitor–item pairs after the cutoff, with `is_known_visitor` flag (evaluation) |
+| `dim_items` | Item category, parent category and train popularity |
 
 ## Roadmap
 
 - [x] Snowflake setup, raw data ingestion, dbt staging/intermediate/marts + tests
-- [ ] Time-based train/test split, export to Parquet
+- [x] Time-based train/test split, export to Parquet
 - [ ] Popularity baseline and Recall@10 evaluation
 - [ ] Two-Tower model in PyTorch
 - [ ] C++ REST inference service
