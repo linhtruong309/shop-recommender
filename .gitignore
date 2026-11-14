@@ -9,3 +9,4 @@ dbt_reco/logs/
 inference_cpp/build/
 .DS_Store
 .pytest_cache/
+ml/artifacts/
