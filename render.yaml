@@ -1,0 +1,9 @@
+# Render Blueprint: deploys the C++ recommendation API on the free plan
+services:
+  - type: web
+    name: shop-recommender-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./inference_cpp/Dockerfile
+    dockerContext: ./inference_cpp
+    healthCheckPath: /health
