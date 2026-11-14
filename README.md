@@ -1,7 +1,7 @@
 # shop-recommender
 
 E-commerce product recommender built on the RetailRocket dataset.
-Stack: Snowflake + dbt (data pipeline) → PyTorch (Two-Tower model) → C++ (REST inference service).
+Stack: Snowflake + dbt (data pipeline) → PyTorch Two-Tower and Spark ALS (models) → C++ (REST inference service, deployed with Docker on Render).
 
 ```
 RetailRocket CSV ──PUT/COPY──► Snowflake RAW
@@ -13,6 +13,16 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
                      PyTorch Two-Tower ──export embeddings──► C++ service
                                                                GET /recommendations
 ```
+
+## Live demo
+
+The C++ API is deployed on Render (free plan; the first request after 15 idle minutes takes ~1 minute to wake up):
+
+- Health: https://shop-recommender-api.onrender.com/health
+- Personalized (visitor with history): https://shop-recommender-api.onrender.com/recommendations?user_id=2&k=5
+- Cold start (unknown visitor → popular items): https://shop-recommender-api.onrender.com/recommendations?user_id=999999999&k=5
+
+The deployed build serves 260,764 visitors with 2+ interactions to fit the 512 MB free instance; embeddings are downloaded from the [v1.0.0 release](https://github.com/linhtruong309/shop-recommender/releases/tag/v1.0.0) at build time.
 
 ## Setup
 
@@ -114,3 +124,4 @@ C++ is 2.7x faster at p50 and 6.3x faster at p99, with a much tighter tail.
 - [x] Spark MLlib ALS baseline, compared with Popularity and Two-Tower
 - [x] C++ REST inference service
 - [x] Latency benchmark, results in README
+- [x] Public deployment (Docker + Render)
