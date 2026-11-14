@@ -1,7 +1,9 @@
 // REST service: GET /health, GET /recommendations?user_id=<id>&k=<n>
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <random>
 #include <sstream>
 
 #include <httplib.h>
@@ -23,6 +25,8 @@ int main(int argc, char** argv) {
     const std::string dir = argc > 1 ? argv[1] : "../ml/artifacts";
     const int port = argc > 2 ? std::atoi(argv[2]) : (env_port ? std::atoi(env_port) : 8080);
     const unsigned threads = env_threads ? static_cast<unsigned>(std::atoi(env_threads)) : 0;
+    const char* env_web = std::getenv("RECO_WEB_DIR");
+    const std::string web_dir = env_web ? env_web : "web";
 
     std::cout << "Loading artifacts from " << dir << " ..." << std::endl;
     const auto start = std::chrono::steady_clock::now();
@@ -33,10 +37,34 @@ int main(int argc, char** argv) {
 
     httplib::Server server;
 
+    // Allow the API to be called from other origins (e.g. a portfolio page)
+    server.set_default_headers({{"Access-Control-Allow-Origin", "*"}});
+
+    // Demo page: static files served at /
+    if (server.set_mount_point("/", web_dir))
+        std::cout << "Serving demo page from " << web_dir << std::endl;
+
     server.Get("/health", [&](const httplib::Request&, httplib::Response& res) {
         std::ostringstream body;
         body << "{\"status\":\"ok\",\"items\":" << model.n_items()
              << ",\"users\":" << model.n_users() << "}";
+        res.set_content(body.str(), "application/json");
+    });
+
+    // Random known users, for the demo page
+    server.Get("/sample_users", [&](const httplib::Request& req, httplib::Response& res) {
+        int n = 6;
+        try {
+            if (req.has_param("n")) n = std::stoi(req.get_param_value("n"));
+        } catch (...) {}
+        n = std::clamp(n, 1, 20);
+        const auto& ids = model.user_ids();
+        static thread_local std::mt19937 rng(std::random_device{}());
+        std::uniform_int_distribution<size_t> pick(0, ids.size() - 1);
+        std::ostringstream body;
+        body << "{\"user_ids\":[";
+        for (int i = 0; i < n && !ids.empty(); ++i) body << (i ? "," : "") << ids[pick(rng)];
+        body << "]}";
         res.set_content(body.str(), "application/json");
     });
 
