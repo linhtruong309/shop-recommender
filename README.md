@@ -44,6 +44,14 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
    python ml/train_two_tower.py --data-dir data/processed
    pytest ml/tests
    ```
+7. Build and run the C++ service:
+   ```bash
+   cd inference_cpp
+   cmake -S . -B build && cmake --build build -j
+   ctest --test-dir build --output-on-failure
+   ./build/reco_server ../ml/artifacts 8080
+   curl "localhost:8080/recommendations?user_id=1&k=10"
+   ```
 
 ## dbt models
 
@@ -74,11 +82,30 @@ Time-based split: last 14 days are the test set. Metrics at K = 10.
 - Two-Tower is ~7x better than the best popularity baseline for visitors with history.
 - ~90% of test visitors are new (cold start); they fall back to recent popularity.
 
+## Serving
+
+The C++ service loads 235,061 item vectors and 1,280,329 user vectors into memory and scores all items per request with multi-threaded SIMD dot products. Unknown visitors fall back to recent popularity.
+
+```
+GET /health
+GET /recommendations?user_id=1&k=10
+→ {"user_id":1,"source":"two_tower","latency_ms":1.2,"items":[{"item_id":219512,"score":0.55}, ...]}
+```
+
+Latency of exact top-10 search over all items, 1,000 random users, MacBook Air (Apple Silicon):
+
+| Implementation | p50 | p95 | p99 |
+|---|---|---|---|
+| NumPy (`ml/bench_numpy.py`) | 3.18 ms | 4.33 ms | 8.65 ms |
+| **C++ (`inference_cpp/reco_bench`)** | **1.17 ms** | **1.29 ms** | **1.38 ms** |
+
+C++ is 2.7x faster at p50 and 6.3x faster at p99, with a much tighter tail.
+
 ## Roadmap
 
 - [x] Snowflake setup, raw data ingestion, dbt staging/intermediate/marts + tests
 - [x] Time-based train/test split, export to Parquet
 - [x] Popularity baseline and Recall@10 evaluation
 - [x] Two-Tower model in PyTorch
-- [ ] C++ REST inference service
-- [ ] Latency benchmark, results in README
+- [x] C++ REST inference service
+- [x] Latency benchmark, results in README
