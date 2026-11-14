@@ -1,4 +1,4 @@
--- Thuộc tính sản phẩm theo thời gian (đa số giá trị đã bị hash, trừ categoryid và available)
+-- Time-versioned item properties (values are hashed except categoryid and available)
 select
     to_timestamp_ntz(timestamp, 3)  as valid_from,
     itemid                          as item_id,

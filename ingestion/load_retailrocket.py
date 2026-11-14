@@ -1,6 +1,6 @@
-"""Nạp bộ dữ liệu RetailRocket từ thư mục data/ vào Snowflake (schema RAW).
+"""Load the RetailRocket dataset from data/ into Snowflake (RAW schema).
 
-Cách dùng:
+Usage:
     python ingestion/load_retailrocket.py --data-dir data
 """
 import argparse
@@ -10,7 +10,7 @@ from pathlib import Path
 import snowflake.connector
 from dotenv import load_dotenv
 
-# file -> bảng đích
+# source file -> target table
 FILES = {
     "events.csv": "EVENTS",
     "item_properties_part1.csv": "ITEM_PROPERTIES",
@@ -35,12 +35,12 @@ def connect():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default="data", type=Path)
-    parser.add_argument("--truncate", action="store_true", help="Xóa dữ liệu cũ trước khi nạp")
+    parser.add_argument("--truncate", action="store_true", help="Truncate target tables before loading")
     args = parser.parse_args()
 
     missing = [f for f in FILES if not (args.data_dir / f).exists()]
     if missing:
-        raise SystemExit(f"Thiếu file trong {args.data_dir}: {', '.join(missing)}")
+        raise SystemExit(f"Missing files in {args.data_dir}: {', '.join(missing)}")
 
     conn = connect()
     cur = conn.cursor()
@@ -51,12 +51,12 @@ def main():
 
         for filename in FILES:
             path = (args.data_dir / filename).resolve()
-            print(f"Upload {filename} ...")
-            # PUT tự nén gzip; OVERWRITE để chạy lại được
+            print(f"Uploading {filename} ...")
+            # PUT gzips automatically; OVERWRITE makes reruns idempotent
             cur.execute(f"PUT 'file://{path.as_posix()}' @RETAILROCKET_STAGE AUTO_COMPRESS=TRUE OVERWRITE=TRUE")
 
         for filename, table in FILES.items():
-            print(f"COPY {filename} -> {table} ...")
+            print(f"Copying {filename} -> {table} ...")
             cur.execute(
                 f"COPY INTO {table} FROM @RETAILROCKET_STAGE/{filename}.gz "
                 f"FILE_FORMAT = (FORMAT_NAME = CSV_HEADER) ON_ERROR = 'ABORT_STATEMENT'"
@@ -66,7 +66,7 @@ def main():
 
         for table in sorted(set(FILES.values())):
             cur.execute(f"SELECT COUNT(*) FROM {table}")
-            print(f"{table}: {cur.fetchone()[0]:,} dòng")
+            print(f"{table}: {cur.fetchone()[0]:,} rows")
     finally:
         cur.close()
         conn.close()

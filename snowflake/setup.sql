@@ -1,10 +1,10 @@
--- Chạy 1 lần bằng tài khoản có quyền ACCOUNTADMIN (hoặc SYSADMIN + SECURITYADMIN)
+-- One-time setup. Requires ACCOUNTADMIN (or SYSADMIN + SECURITYADMIN).
 USE ROLE ACCOUNTADMIN;
 
 CREATE ROLE IF NOT EXISTS RECO_ROLE;
-GRANT ROLE RECO_ROLE TO USER YOUR_USER;  -- thay YOUR_USER bằng tên user Snowflake của bạn
+GRANT ROLE RECO_ROLE TO USER linhtruongsrh397;
 
--- Warehouse nhỏ, tự tắt sau 60s để tiết kiệm credit
+-- Smallest warehouse; auto-suspends after 60s idle to save credits
 CREATE WAREHOUSE IF NOT EXISTS RECO_WH
   WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE;
 GRANT USAGE ON WAREHOUSE RECO_WH TO ROLE RECO_ROLE;
@@ -14,8 +14,8 @@ GRANT OWNERSHIP ON DATABASE RECO TO ROLE RECO_ROLE COPY CURRENT GRANTS;
 
 USE ROLE RECO_ROLE;
 USE DATABASE RECO;
-CREATE SCHEMA IF NOT EXISTS RAW;        -- dữ liệu thô, nạp bằng COPY INTO
-CREATE SCHEMA IF NOT EXISTS ANALYTICS;  -- dbt ghi vào đây
+CREATE SCHEMA IF NOT EXISTS RAW;        -- raw data, loaded via COPY INTO
+CREATE SCHEMA IF NOT EXISTS ANALYTICS;  -- dbt output
 
 USE SCHEMA RAW;
 
@@ -24,7 +24,7 @@ CREATE FILE FORMAT IF NOT EXISTS CSV_HEADER
 
 CREATE STAGE IF NOT EXISTS RETAILROCKET_STAGE FILE_FORMAT = CSV_HEADER;
 
--- Bảng thô giữ đúng cấu trúc file gốc của bộ RetailRocket
+-- Raw tables mirror the original RetailRocket CSV schemas
 CREATE TABLE IF NOT EXISTS EVENTS (
   TIMESTAMP      NUMBER,      -- epoch milliseconds
   VISITORID      NUMBER,
