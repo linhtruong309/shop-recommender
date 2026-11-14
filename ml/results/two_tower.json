@@ -1,0 +1,32 @@
+{
+  "config": {
+    "data_dir": "data/processed",
+    "epochs": 5,
+    "dim": 64,
+    "batch_size": 2048,
+    "lr": 0.001,
+    "temperature": 0.05,
+    "max_history": 20,
+    "max_targets_per_user": 50,
+    "no_logq": false,
+    "k": 10,
+    "recent_days": 7,
+    "seed": 42,
+    "results": "ml/results/two_tower.json",
+    "artifacts": "ml/artifacts"
+  },
+  "results": {
+    "two_tower/known_visitors": {
+      "recall@10": 0.039314867673746104,
+      "ndcg@10": 0.023114831557082553,
+      "hit_rate@10": 0.053201570326248816,
+      "n_users": 14774
+    },
+    "two_tower/all_visitors": {
+      "recall@10": 0.01012143317136558,
+      "ndcg@10": 0.0063216011432136,
+      "hit_rate@10": 0.012758317197676465,
+      "n_users": 142025
+    }
+  }
+}
