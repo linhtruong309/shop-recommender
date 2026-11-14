@@ -38,6 +38,11 @@ RetailRocket CSV ──PUT/COPY──► Snowflake RAW
    pip install -r ml/requirements.txt
    python ml/export_parquet.py --out-dir data/processed
    ```
+6. Run baselines and tests:
+   ```bash
+   python ml/baseline.py --data-dir data/processed
+   pytest ml/tests
+   ```
 
 ## dbt models
 
